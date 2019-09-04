@@ -1,0 +1,28 @@
+
+##jenkins 
+
+docker stop jenkins-master
+docker rm jenkins-master
+docker run -p 8080:8080 --name=jenkins-master -d jenkins/jenkins
+
+docker build -t myjenkins .
+docker exec jenkins-master cat /var/jenkins_home/secrets/initialAdminPassword
+docker exec jenkins-master cat /var/log/jenkins/jenkins.log
+
+docker volume ls
+docker volume create jenkins-data
+docker volume rm jenkins-data
+
+# (clean orphan volumes)
+docker container prune
+docker volume prune
+
+docker cp jenkins-master:/var/log/jenkins/jenkins.log jenkins.log
+docker run -p 8080:8080 -p 50000:50000 --name=jenkins-master --mount source=jenkins-log,target=/var/log/jenkins --mount source=jenkins-data,target=/var/jenkins_home -d myjenkins
+
+# clean data
+docker volume rm jenkins-log
+docker volume rm jenkins-data
+
+# list the images in filesystem
+docker image ls
